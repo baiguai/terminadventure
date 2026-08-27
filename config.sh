@@ -10,6 +10,7 @@ SOURCES=(
 
 HEADERS=(
     "src/main.hpp"
+    "src/app_state/app_state.hpp"
 )
 
 LIBS=(
