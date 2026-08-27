@@ -2,14 +2,18 @@
 
 # Central configuration - edit values here, all scripts pick them up
 
-APP_NAME="App"
+APP_NAME="terminadventure"
 
 SOURCES=(
     "src/main.cpp"
-    "src/utils.cpp"
 )
 
 HEADERS=(
-    "src/main.h"
-    "src/utils.h"
+    "src/main.hpp"
+)
+
+LIBS=(
+    "ftxui::screen"
+    "ftxui::dom"
+    "ftxui::component"
 )

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# scribbolyth setup - checks prerequisites and prepares the FTXUI dependency.
+# terminadventure setup - checks prerequisites and prepares the FTXUI dependency.
 #
 # Safe to run at any time; it does NOT assume a blank/fresh project and never
 # creates scaffolding. Optional flag:
@@ -25,7 +25,7 @@ case "${1:-}" in
     * ) echo "usage: ./setup.sh [--prefetch]"; exit 2 ;;
 esac
 
-echo "=== scribbolyth setup ==="
+echo "=== terminadventure setup ==="
 
 # --- cmake -----------------------------------------------------------------
 command -v cmake >/dev/null 2>&1 || { echo "ERROR: cmake is required (3.16+). Install it and try again."; exit 1; }
