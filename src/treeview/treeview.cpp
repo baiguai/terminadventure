@@ -10,6 +10,7 @@ namespace terminadventure::treeview
 
         private:
             std::shared_ptr<AppState> state_;
+            std::vector<TreeNode> roots_;
     };
 
     ftxui::Component MakeTreeView(std::shared_ptr<AppState> state)
