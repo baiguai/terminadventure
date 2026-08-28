@@ -7,6 +7,7 @@ namespace terminadventure::dm_tools
     {
         public:
             DmTools(std::shared_ptr<AppState> state) : state_(std::move(state))
+            {}
 
         private:
             std::shared_ptr<AppState> state_;

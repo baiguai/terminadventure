@@ -13,6 +13,7 @@ SOURCES=(
 HEADERS=(
     "src/main.hpp"
     "src/app_state/app_state.hpp"
+    "src/treeview/treenode.hpp"
     "src/treeview/treeview.hpp"
     "src/dm_tools/dm_tool.hpp"
 )
