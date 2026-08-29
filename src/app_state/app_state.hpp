@@ -13,4 +13,5 @@ inline constexpr int kMaxTreeviewWidth = 200;
 struct AppState
 {
     std::string init_path;
+    int treeview_width = kDefaultTreeviewWidth;
 };

@@ -15,6 +15,8 @@ FetchContent_MakeAvailable(ftxui)
 # Create executable
 add_executable(terminadventure
     src/main.cpp
+    src/treeview/treeview.cpp
+    src/dm_tools/dm_tool.cpp
 )
 
 # FTXUI is terminal-only, no extra platform libs needed
