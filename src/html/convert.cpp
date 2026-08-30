@@ -286,6 +286,7 @@ namespace terminadventure::html
                         if (key == "id")         { if (!ParseString(node.id)) return false; }
                         else if (key == "title") { if (!ParseString(node.name)) return false; }
                         else if (key == "content") { if (!ParseString(node.text)) return false; }
+                        else if (key == "type")  { std::string t; if (!ParseString(t)) return false; node.type = terminadventure::treeview::NodeTypeFromString(t); }
                         else if (key == "expanded"){ if (!ParseBool(node.expanded)) return false; }
                         else if (key == "children"){ if (!ParseArray(node.children)) return false; }
                         else { if (!SkipValue()) return false; }
@@ -381,6 +382,7 @@ namespace terminadventure::html
             out += pad2 + "\"id\": \"" + id + "\",\n";
             out += pad2 + "\"title\": " + terminadventure::io::JsonEscape(node.name) + ",\n";
             out += pad2 + "\"content\": " + terminadventure::io::JsonEscape(ExportContent(node)) + ",\n";
+            out += pad2 + "\"type\": \"" + terminadventure::treeview::NodeTypeToString(node.type) + "\",\n";
             if (node.children.empty())
             {
                 out += pad2 + "\"children\": [],\n";

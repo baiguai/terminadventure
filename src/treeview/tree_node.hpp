@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "node_type.hpp"
+
 namespace terminadventure::treeview
 {
 
@@ -12,6 +14,7 @@ namespace terminadventure::treeview
         std::string name;
         bool expanded = false;
         std::string text;
+        NodeType type = NodeType::EDITOR;
         std::vector<TreeNode> children;
     };
 

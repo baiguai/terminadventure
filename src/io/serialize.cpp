@@ -49,6 +49,7 @@ namespace terminadventure::io
             out += pad + "{\n";
             out += pad2 + "\"id\": " + Escape(node.id) + ",\n";
             out += pad2 + "\"name\": " + Escape(node.name) + ",\n";
+            out += pad2 + "\"type\": " + Escape(treeview::NodeTypeToString(node.type)) + ",\n";
             out += pad2 + "\"expanded\": " + (node.expanded ? "true" : "false") + ",\n";
             out += pad2 + "\"text\": " + Escape(node.text) + ",\n";
             out += pad2 + "\"children\": [\n";
@@ -331,6 +332,7 @@ namespace terminadventure::io
 
                         if (key == "id")       { if (!ParseString(node.id)) return false; }
                         else if (key == "name"){ if (!ParseString(node.name)) return false; }
+                        else if (key == "type"){ std::string t; if (!ParseString(t)) return false; node.type = treeview::NodeTypeFromString(t); }
                         else if (key == "text") { if (!ParseString(node.text)) return false; }
                         else if (key == "expanded") { if (!ParseBool(node.expanded)) return false; }
                         else if (key == "children") { if (!ParseArray(node.children)) return false; }

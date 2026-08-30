@@ -39,6 +39,7 @@ namespace terminadventure::treeview
     TreeNode* FindById(std::vector<TreeNode>& nodes, const std::string& id);
     void CollectAllDepth(TreeNode& node, int depth, std::vector<std::pair<TreeNode*, int>>& out);
     void EnsureIds(std::vector<TreeNode>& nodes);
+    std::vector<TreeNode> DefaultNodes();
 
     // ============ File scope helpers ============
 
@@ -428,6 +429,11 @@ namespace terminadventure::treeview
                 state_->snapshot_undo = [this] { SnapshotUndo(); };
                 state_->apply_undo = [this](std::size_t index) { ApplyUndo(index); };
                 state_->clear_undo = [this] { ClearUndo(); };
+
+                if (roots_.empty())
+                {
+                    roots_ = DefaultNodes();
+                }
 
                 RefreshActiveNode();
             }
@@ -895,11 +901,55 @@ namespace terminadventure::treeview
         LoadFrom(path);
     }
 
+    // Build the default document skeleton: a DM Tools root holding the
+    // standard per-campaign folders, plus a plain Notes root.
+    std::vector<TreeNode> DefaultNodes()
+    {
+        std::vector<TreeNode> folders;
+        folders.reserve(4);
+        TreeNode game;
+        game.id = terminadventure::bookmark::NewId();
+        game.name = "Current Game";
+        game.type = NodeType::GAME;
+        TreeNode roller;
+        roller.id = terminadventure::bookmark::NewId();
+        roller.name = "Dice Roller";
+        roller.type = NodeType::ROLLER;
+        TreeNode players;
+        players.id = terminadventure::bookmark::NewId();
+        players.name = "Players";
+        players.type = NodeType::PLAYERS;
+        TreeNode enemies;
+        enemies.id = terminadventure::bookmark::NewId();
+        enemies.name = "Enemies";
+        enemies.type = NodeType::ENEMIES;
+        folders.push_back(std::move(game));
+        folders.push_back(std::move(roller));
+        folders.push_back(std::move(players));
+        folders.push_back(std::move(enemies));
+
+        TreeNode dm;
+        dm.id = terminadventure::bookmark::NewId();
+        dm.name = "DM Tools";
+        dm.expanded = true;
+        dm.children = std::move(folders);
+
+        TreeNode notes;
+        notes.id = terminadventure::bookmark::NewId();
+        notes.name = "Notes";
+
+        std::vector<TreeNode> roots;
+        roots.push_back(std::move(dm));
+        roots.push_back(std::move(notes));
+        return roots;
+    }
+
     // Clear the tree, selection, bookmarks, history and undo; reset the pane
-    // width and leave the document without a file path.
+    // width and leave the document without a file path. A fresh document
+    // starts from the default node skeleton.
     void TreeView::NewDocument()
     {
-        roots_.clear();
+        roots_ = DefaultNodes();
         current_file_.clear();
         selected_ = nullptr;
         state_->treeview_width = kDefaultTreeviewWidth;
