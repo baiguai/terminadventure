@@ -3,11 +3,13 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "../app_state/app_state.hpp"
-#include "treenode.hpp"
+#include "../editor/editor_state.hpp"
+#include "tree_node.hpp"
 #include <ftxui/component/component.hpp>
 
 namespace terminadventure::treeview
 {
-    ftxui::Component MakeTreeView(std::shared_ptr<AppState> state);
+
+    ftxui::Component MakeTreeView(std::shared_ptr<EditorState> state);
+
 }

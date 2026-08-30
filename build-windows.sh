@@ -15,12 +15,7 @@ if [ "$1" == "r" ]; then
 fi
 echo "Performing $BUILD_TYPE build."
 
-TOOLCHAIN="$(cd "$(dirname "$0")" && pwd)/cmake/mingw-x86_64.cmake"
-
-if [ ! -f "$TOOLCHAIN" ]; then
-    echo "Error: toolchain file not found: $TOOLCHAIN"
-    exit 1
-fi
+TOOLCHAIN="$(dirname "$0")/cmake/mingw-x86_64.cmake"
 
 mkdir -p build-windows
 
