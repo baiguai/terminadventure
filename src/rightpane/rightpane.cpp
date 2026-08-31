@@ -6,6 +6,7 @@
 
 #include "../diceroller/diceroller.hpp"
 #include "../editor/editor.hpp"
+#include "../players/players.hpp"
 #include "../treeview/node_type.hpp"
 #include "../treeview/tree_node.hpp"
 
@@ -19,14 +20,22 @@ namespace terminadventure::rightpane
                 && state->active_node->type == terminadventure::treeview::NodeType::ROLLER;
         }
 
+        bool IsPlayersNode(const std::shared_ptr<EditorState>& state)
+        {
+            return state->active_node != nullptr
+                && state->active_node->type == terminadventure::treeview::NodeType::PLAYERS;
+        }
+
         class RightPane : public ftxui::ComponentBase
         {
         public:
             RightPane(std::shared_ptr<EditorState> state,
-                      ftxui::Component editor, ftxui::Component roller)
+                      ftxui::Component editor, ftxui::Component roller,
+                      ftxui::Component players)
                 : state_(std::move(state))
                 , editor_(std::move(editor))
                 , roller_(std::move(roller))
+                , players_(std::move(players))
             {
             }
 
@@ -34,7 +43,9 @@ namespace terminadventure::rightpane
 
             ftxui::Component Active() const
             {
-                return IsDiceRollerNode(state_) ? roller_ : editor_;
+                if (IsDiceRollerNode(state_)) return roller_;
+                if (IsPlayersNode(state_)) return players_;
+                return editor_;
             }
 
             bool OnEvent(ftxui::Event event) override
@@ -51,6 +62,7 @@ namespace terminadventure::rightpane
             std::shared_ptr<EditorState> state_;
             ftxui::Component editor_;
             ftxui::Component roller_;
+            ftxui::Component players_;
         };
     }
 
@@ -58,6 +70,8 @@ namespace terminadventure::rightpane
     {
         auto editor = terminadventure::editor::MakeEditor(state);
         auto roller = terminadventure::diceroller::MakeDiceRoller(state);
-        return ftxui::Make<RightPane>(std::move(state), std::move(editor), std::move(roller));
+        auto players = terminadventure::players::MakePlayers(state);
+        return ftxui::Make<RightPane>(std::move(state), std::move(editor), std::move(roller),
+                                      std::move(players));
     }
 }

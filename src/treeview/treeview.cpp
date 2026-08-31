@@ -199,10 +199,13 @@ namespace terminadventure::treeview
                 };
                 state_->operations["enter_insert"] = [this](const std::string&, int)
                 {
-                    // ROLLER nodes show the dedicated dice-roller UI, which
-                    // reuses INSERT mode for its input field.
+                    // ROLLER nodes show the dedicated dice-roller UI, and
+                    // PLAYERS nodes the character-manager pane; both reuse
+                    // INSERT mode for their interactive content.
                     const bool can_insert = selected_ != nullptr
-                        && (!IsProtected(selected_) || selected_->type == NodeType::ROLLER);
+                        && (!IsProtected(selected_)
+                            || selected_->type == NodeType::ROLLER
+                            || selected_->type == NodeType::PLAYERS);
                     if (!can_insert)
                     {
                         return;
@@ -827,9 +830,10 @@ namespace terminadventure::treeview
             terminadventure::history::Record(*state_, selected_->id);
         }
         // A ROLLER node renders through the dedicated dice-roller UI and
-        // reuses INSERT mode: focus the right pane so typing rolls works.
+        // reuses INSERT mode: focus the right pane so typing works. The same
+        // applies to PLAYERS nodes, which show the character-manager pane.
         if (selected_ != nullptr && state_->mode == Mode::TREE
-            && selected_->type == NodeType::ROLLER)
+            && (selected_->type == NodeType::ROLLER || selected_->type == NodeType::PLAYERS))
         {
             state_->mode = Mode::INSERT;
             if (state_->focus_editor) state_->focus_editor();
@@ -844,7 +848,8 @@ namespace terminadventure::treeview
     {
         std::string json = terminadventure::io::Serialize(roots_, state_->treeview_width,
                                                       state_->bookmarks,
-                                                      state_->history, state_->presets);
+                                                      state_->history, state_->presets,
+                                                      state_->players);
         if (!terminadventure::io::SaveDocumentFile(path, json))
         {
             state_->status = "Error: could not write " + path;
@@ -879,8 +884,9 @@ namespace terminadventure::treeview
         std::vector<terminadventure::bookmark::Bookmark> loaded_marks;
         std::vector<std::string> loaded_history;
         std::vector<std::string> loaded_presets;
+        std::vector<terminadventure::players::Player> loaded_players;
         if (!terminadventure::io::Deserialize(content, loaded, &loaded_width, &loaded_marks,
-                                          &loaded_history, &loaded_presets))
+                                          &loaded_history, &loaded_presets, &loaded_players))
         {
             state_->status = "Error: could not parse " + path;
             return;
@@ -889,6 +895,7 @@ namespace terminadventure::treeview
         state_->bookmarks = std::move(loaded_marks);
         state_->history = std::move(loaded_history);
         state_->presets = std::move(loaded_presets);
+        state_->players = std::move(loaded_players);
         EnsureIds(loaded);
         roots_ = std::move(loaded);
         current_file_ = path;
@@ -1046,7 +1053,7 @@ namespace terminadventure::treeview
         std::vector<TreeNode> branch;
         branch.push_back(*selected_);
         const std::string json = terminadventure::io::Serialize(branch, state_->treeview_width,
-                                                             {}, {}, {});
+                                                             {}, {}, {}, {});
         if (!terminadventure::io::SaveDocumentFile(path, json))
         {
             state_->status = "Error: could not export " + path;
@@ -1166,7 +1173,8 @@ namespace terminadventure::treeview
     {
         std::string json = terminadventure::io::Serialize(roots_, state_->treeview_width,
                                                       state_->bookmarks,
-                                                      state_->history, state_->presets);
+                                                      state_->history, state_->presets,
+                                                      state_->players);
         auto& stack = state_->undo_stack;
         if (!stack.empty() && stack.back().json == json) return;
         UndoState st;
@@ -1191,7 +1199,8 @@ namespace terminadventure::treeview
 
         UndoState current;
         current.json = terminadventure::io::Serialize(roots_, state_->treeview_width,
-                                                  state_->bookmarks, state_->history, state_->presets);
+                                                  state_->bookmarks, state_->history,
+                                                  state_->presets, state_->players);
         current.preview = selected_ ? terminadventure::undo::FirstTextLine(*selected_) : "";
         state_->redo_stack.push_back(std::move(current));
         for (std::size_t i = stack.size(); i-- > stack_index + 1;)
@@ -1214,7 +1223,9 @@ namespace terminadventure::treeview
         std::vector<bookmark::Bookmark> marks;
         std::vector<std::string> hist;
         std::vector<std::string> pres;
-        if (!terminadventure::io::Deserialize(target.json, loaded, &width, &marks, &hist, &pres))
+        std::vector<terminadventure::players::Player> plrs;
+        if (!terminadventure::io::Deserialize(target.json, loaded, &width, &marks, &hist, &pres,
+                                          &plrs))
         {
             state_->status = "Undo failed: stored state unreadable";
             return;
@@ -1224,6 +1235,7 @@ namespace terminadventure::treeview
         state_->bookmarks = std::move(marks);
         state_->history = std::move(hist);
         state_->presets = std::move(pres);
+        state_->players = std::move(plrs);
         state_->changed = true;
         selected_ = nullptr;
         if (!selected_id.empty())

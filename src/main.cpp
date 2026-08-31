@@ -19,6 +19,7 @@
 #include "links/links.hpp"
 #include "links/brokelinks.hpp"
 #include "op/op.hpp"
+#include "players/players.hpp"
 #include "search/search.hpp"
 #include "undo/undo.hpp"
 
@@ -147,6 +148,20 @@ int main(int, char** argv) {
         template_path = "terminadventure.html";
     }
     state->template_path = template_path.string();
+
+    // D&D reference data for the Players pane. Look next to the executable
+    // first, then fall back to ./config/dnd.conf. If neither is present the
+    // Players pane runs with empty pickers (dnd stays nullptr).
+    fs::path dnd_path = fs::path(argv[0]).parent_path() / "dnd.conf";
+    if (!fs::exists(dnd_path))
+    {
+        dnd_path = "config/dnd.conf";
+        if (!fs::exists(dnd_path))
+        {
+            dnd_path = "dnd.conf";
+        }
+    }
+    state->dnd = terminadventure::players::LoadDnDData(dnd_path.string());
 
     fs::path init_path;
     if (const char* env = std::getenv("TERMINADVENTURE_INIT"); env != nullptr && *env != '\0')

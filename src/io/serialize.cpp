@@ -8,6 +8,47 @@ namespace terminadventure::io
 {
     namespace
     {
+        std::string Escape(const std::string& s);
+
+        void AppendPlayer(std::string& out, const players::Player& p)
+        {
+            out += "    {\n";
+            out += "      \"name\": " + Escape(p.name) + ",\n";
+            out += "      \"race\": " + Escape(p.race) + ",\n";
+            out += "      \"char_class\": " + Escape(p.char_class) + ",\n";
+            out += "      \"background\": " + Escape(p.background) + ",\n";
+            out += "      \"alignment\": " + Escape(p.alignment) + ",\n";
+            out += "      \"level\": " + std::to_string(p.level) + ",\n";
+            out += "      \"ac\": " + std::to_string(p.ac) + ",\n";
+            out += "      \"hp\": " + std::to_string(p.hp) + ",\n";
+            out += "      \"speed\": " + Escape(p.speed) + ",\n";
+            out += "      \"str\": " + std::to_string(p.str) + ",\n";
+            out += "      \"dex\": " + std::to_string(p.dex) + ",\n";
+            out += "      \"con\": " + std::to_string(p.con) + ",\n";
+            out += "      \"intel\": " + std::to_string(p.intel) + ",\n";
+            out += "      \"wis\": " + std::to_string(p.wis) + ",\n";
+            out += "      \"cha\": " + std::to_string(p.cha) + ",\n";
+            out += "      \"ac_bonus\": " + Escape(p.ac_bonus) + ",\n";
+            out += "      \"hit_dice\": " + Escape(p.hit_dice) + ",\n";
+            out += "      \"equipment\": " + Escape(p.equipment) + ",\n";
+            out += "      \"features\": " + Escape(p.features) + ",\n";
+            out += "      \"saves\": [";
+            for (std::size_t i = 0; i < p.proficient_saves.size(); ++i)
+            {
+                if (i) out += ", ";
+                out += Escape(p.proficient_saves[i]);
+            }
+            out += "],\n";
+            out += "      \"skills\": [";
+            for (std::size_t i = 0; i < p.proficient_skills.size(); ++i)
+            {
+                if (i) out += ", ";
+                out += Escape(p.proficient_skills[i]);
+            }
+            out += "]\n";
+            out += "    }";
+        }
+
         std::string Escape(const std::string& s)
         {
             std::string out;
@@ -70,7 +111,8 @@ namespace terminadventure::io
                 bool Deserialize(std::vector<TreeNode>& roots, int* tree_width,
                                  std::vector<bookmark::Bookmark>* bookmarks,
                                  std::vector<std::string>* history,
-                                 std::vector<std::string>* presets)
+                                 std::vector<std::string>* presets,
+                                 std::vector<players::Player>* players)
                 {
                     SkipWs();
                     if (!Consume('{')) return false;
@@ -86,6 +128,8 @@ namespace terminadventure::io
                     bool have_history = false;
                     std::vector<std::string> pres;
                     bool have_presets = false;
+                    std::vector<players::Player> plrs;
+                    bool have_players = false;
                     int version = -1;
 
                     if (!Consume('}'))
@@ -128,6 +172,11 @@ namespace terminadventure::io
                                 if (!ParseHistory(pres)) return false;
                                 have_presets = true;
                             }
+                            else if (key == "players")
+                            {
+                                if (!ParsePlayers(plrs)) return false;
+                                have_players = true;
+                            }
                             else
                             {
                                 if (!SkipValue()) return false;
@@ -150,6 +199,7 @@ namespace terminadventure::io
                     if (have_marks && bookmarks) *bookmarks = std::move(marks);
                     if (have_history && history) *history = std::move(hist);
                     if (have_presets && presets) *presets = std::move(pres);
+                    if (have_players && players) *players = std::move(plrs);
                     return true;
                 }
 
@@ -299,6 +349,87 @@ namespace terminadventure::io
                     }
                 }
 
+                bool ParsePlayers(std::vector<players::Player>& out)
+                {
+                    if (!Consume('[')) return false;
+                    SkipWs();
+                    if (Consume(']')) return true;
+                    while (true)
+                    {
+                        SkipWs();
+                        players::Player p;
+                        if (!ParsePlayer(p)) return false;
+                        out.push_back(std::move(p));
+                        SkipWs();
+                        if (Consume(',')) continue;
+                        if (Consume(']')) return true;
+                        return false;
+                    }
+                }
+
+                bool ParseStrings(std::vector<std::string>& out)
+                {
+                    if (!Consume('[')) return false;
+                    SkipWs();
+                    if (Consume(']')) return true;
+                    while (true)
+                    {
+                        SkipWs();
+                        std::string s;
+                        if (!ParseString(s)) return false;
+                        out.push_back(std::move(s));
+                        SkipWs();
+                        if (Consume(',')) continue;
+                        if (Consume(']')) return true;
+                        return false;
+                    }
+                }
+
+                bool ParsePlayer(players::Player& p)
+                {
+                    p = players::Player{};
+                    if (!Consume('{')) return false;
+                    SkipWs();
+                    if (Consume('}')) return true;
+                    while (true)
+                    {
+                        SkipWs();
+                        std::string key;
+                        if (!ParseString(key)) return false;
+                        SkipWs();
+                        if (!Consume(':')) return false;
+                        SkipWs();
+
+                        if      (key == "name")        { if (!ParseString(p.name)) return false; }
+                        else if (key == "race")        { if (!ParseString(p.race)) return false; }
+                        else if (key == "char_class")  { if (!ParseString(p.char_class)) return false; }
+                        else if (key == "background")  { if (!ParseString(p.background)) return false; }
+                        else if (key == "alignment")   { if (!ParseString(p.alignment)) return false; }
+                        else if (key == "speed")       { if (!ParseString(p.speed)) return false; }
+                        else if (key == "ac_bonus")    { if (!ParseString(p.ac_bonus)) return false; }
+                        else if (key == "hit_dice")    { if (!ParseString(p.hit_dice)) return false; }
+                        else if (key == "equipment")   { if (!ParseString(p.equipment)) return false; }
+                        else if (key == "features")    { if (!ParseString(p.features)) return false; }
+                        else if (key == "level")       { if (!ParseNumber(p.level)) return false; }
+                        else if (key == "ac")          { if (!ParseNumber(p.ac)) return false; }
+                        else if (key == "hp")          { if (!ParseNumber(p.hp)) return false; }
+                        else if (key == "str")         { if (!ParseNumber(p.str)) return false; }
+                        else if (key == "dex")         { if (!ParseNumber(p.dex)) return false; }
+                        else if (key == "con")         { if (!ParseNumber(p.con)) return false; }
+                        else if (key == "intel")       { if (!ParseNumber(p.intel)) return false; }
+                        else if (key == "wis")         { if (!ParseNumber(p.wis)) return false; }
+                        else if (key == "cha")         { if (!ParseNumber(p.cha)) return false; }
+                        else if (key == "saves")       { if (!ParseStrings(p.proficient_saves)) return false; }
+                        else if (key == "skills")      { if (!ParseStrings(p.proficient_skills)) return false; }
+                        else { if (!SkipValue()) return false; }
+
+                        SkipWs();
+                        if (Consume(',')) continue;
+                        if (Consume('}')) return true;
+                        return false;
+                    }
+                }
+
                 bool ParseBookmark(bookmark::Bookmark& mark)
                 {
                     if (!Consume('{')) return false;
@@ -413,7 +544,8 @@ namespace terminadventure::io
     std::string Serialize(const std::vector<TreeNode>& roots, int tree_width,
                           const std::vector<bookmark::Bookmark>& bookmarks,
                           const std::vector<std::string>& history,
-                          const std::vector<std::string>& presets)
+                          const std::vector<std::string>& presets,
+                          const std::vector<players::Player>& players)
     {
         std::string out = "{\n  \"version\": 1,\n  \"tree_width\": " +
                           std::to_string(tree_width) + ",\n  \"bookmarks\": [\n";
@@ -440,6 +572,12 @@ namespace terminadventure::io
             out += "    " + Escape(presets[i]);
             out += (i + 1 < presets.size()) ? ",\n" : "\n";
         }
+        out += "  ],\n  \"players\": [\n";
+        for (std::size_t i = 0; i < players.size(); ++i)
+        {
+            AppendPlayer(out, players[i]);
+            out += (i + 1 < players.size()) ? ",\n" : "\n";
+        }
         out += "  ],\n  \"roots\": [\n";
         for (std::size_t i = 0; i < roots.size(); ++i)
         {
@@ -452,10 +590,11 @@ namespace terminadventure::io
 
     bool Deserialize(const std::string& json, std::vector<TreeNode>& roots,
                      int* tree_width, std::vector<bookmark::Bookmark>* bookmarks,
-                     std::vector<std::string>* history, std::vector<std::string>* presets)
+                     std::vector<std::string>* history, std::vector<std::string>* presets,
+                     std::vector<players::Player>* players)
     {
         Parser parser(json);
-        return parser.Deserialize(roots, tree_width, bookmarks, history, presets);
+        return parser.Deserialize(roots, tree_width, bookmarks, history, presets, players);
     }
 
     bool WriteFile(const std::string& path, const std::string& content)

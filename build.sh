@@ -83,6 +83,12 @@ if [ -f "bin/$APP_NAME" ]; then
     else
         echo "Warning: config/init.conf not found - init config not copied"
     fi
+    if [ -f "../config/dnd.conf" ]; then
+        cp "../config/dnd.conf" "bin/"
+        echo "D&D config copied to: $(pwd)/bin/dnd.conf"
+    else
+        echo "Warning: config/dnd.conf not found - D&D data not copied"
+    fi
     if [ -d "../build-windows/bin" ]; then
         cp "../config/commands.conf" "../build-windows/bin/" 2>/dev/null || \
             echo "Warning: could not copy config to build-windows/bin/"
@@ -90,6 +96,8 @@ if [ -f "bin/$APP_NAME" ]; then
             echo "Warning: could not copy template to build-windows/bin/"
         cp "../config/init.conf" "../build-windows/bin/" 2>/dev/null || \
             echo "Warning: could not copy init config to build-windows/bin/"
+        cp "../config/dnd.conf" "../build-windows/bin/" 2>/dev/null || \
+            echo "Warning: could not copy D&D config to build-windows/bin/"
     fi
 
     echo "-- Build successful --"

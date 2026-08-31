@@ -10,6 +10,7 @@
 #include "../keyboard/keymap.hpp"
 #include "../op/op.hpp"
 #include "../treeview/tree_node.hpp"
+#include "../players/dnd_data.hpp"
 
 inline constexpr int kDefaultTreeviewWidth = 30;
 inline constexpr int kMinTreeviewWidth = 10;
@@ -55,6 +56,14 @@ struct EditorState {
     // Saved dice-roller presets, kept as raw roll strings (e.g. "2d6+2").
     // Persisted with the document so they travel with the open file.
     std::vector<std::string> presets;
+
+    // Saved player characters (the Players pane). Persisted with the document.
+    std::vector<terminadventure::players::Player> players;
+
+    // The D&D reference data loaded from ./config/dnd.conf (races, classes,
+    // backgrounds, skills, alignments). Stored on state so the Players pane
+    // can build its dropdowns and run generation. Null if dnd.conf is missing.
+    std::shared_ptr<terminadventure::players::DnDData> dnd;
 
     // Document undo history. A snapshot is pushed before every content
     // mutation (tree edits and text edits); `undo_stack` is newest last,

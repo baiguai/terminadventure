@@ -20,6 +20,8 @@ add_executable(terminadventure
     src/treeview/treeview.cpp
     src/diceroller/diceroller.cpp
     src/rightpane/rightpane.cpp
+    src/players/players.cpp
+    src/players/players_ui.cpp
     src/keyboard/keymap.cpp
     src/op/op.cpp
     src/config/config.cpp
