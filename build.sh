@@ -71,11 +71,11 @@ if [ -f "bin/$APP_NAME" ]; then
     else
         echo "Warning: config/commands.conf not found - config not copied"
     fi
-    if [ -f "../config/scribboleth.html" ]; then
-        cp "../config/scribboleth.html" "bin/"
-        echo "Template .html copied to: $(pwd)/bin/scribboleth.html"
+    if [ -f "../config/terminadventure.html" ]; then
+        cp "../config/terminadventure.html" "bin/"
+        echo "Template .html copied to: $(pwd)/bin/terminadventure.html"
     else
-        echo "Warning: config/scribboleth.html not found - template not copied"
+        echo "Warning: config/terminadventure.html not found - template not copied"
     fi
     if [ -f "../config/init.conf" ]; then
         cp "../config/init.conf" "bin/"
@@ -86,7 +86,7 @@ if [ -f "bin/$APP_NAME" ]; then
     if [ -d "../build-windows/bin" ]; then
         cp "../config/commands.conf" "../build-windows/bin/" 2>/dev/null || \
             echo "Warning: could not copy config to build-windows/bin/"
-        cp "../config/scribboleth.html" "../build-windows/bin/" 2>/dev/null || \
+        cp "../config/terminadventure.html" "../build-windows/bin/" 2>/dev/null || \
             echo "Warning: could not copy template to build-windows/bin/"
         cp "../config/init.conf" "../build-windows/bin/" 2>/dev/null || \
             echo "Warning: could not copy init config to build-windows/bin/"
