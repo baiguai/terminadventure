@@ -131,17 +131,23 @@ namespace terminadventure::treeview
 
                 state_->operations["new_node"] = [this](const std::string& name, int)
                 {
-                    if (!name.empty()) InsertNode(name);
+                    if (!name.empty() && !(selected_ && IsProtected(FindParent(roots_, selected_))))
+                    {
+                        InsertNode(name);
+                    }
                     RefreshActiveNode();
                 };
                 state_->operations["new_child"] = [this](const std::string& name, int)
                 {
-                    if (!name.empty()) InsertChild(name);
+                    if (!name.empty() && !IsProtected(selected_))
+                    {
+                        InsertChild(name);
+                    }
                     RefreshActiveNode();
                 };
                 state_->operations["rename_node"] = [this](const std::string& name, int)
                 {
-                    if (selected_ && !name.empty())
+                    if (selected_ && !name.empty() && !IsProtected(selected_))
                     {
                         SnapshotUndo();
                         selected_->name = name;
@@ -150,34 +156,41 @@ namespace terminadventure::treeview
                 };
                 state_->operations["delete_node"] = [this](const std::string&, int)
                 {
-                    DeleteNode();
+                    if (!IsProtected(selected_) && !IsProtected(FindParent(roots_, selected_)))
+                    {
+                        DeleteNode();
+                    }
                     RefreshActiveNode();
                 };
                 state_->operations["move_node_up"] = [this](const std::string&, int count)
                 {
-                    if (state_->mode == Mode::TREE) for (int i = 0; i < count; ++i) MoveNode(-1);
+                    if (state_->mode == Mode::TREE && !IsProtected(selected_))
+                        for (int i = 0; i < count; ++i) MoveNode(-1);
                     RefreshActiveNode();
                 };
                 state_->operations["move_node_down"] = [this](const std::string&, int count)
                 {
-                    if (state_->mode == Mode::TREE) for (int i = 0; i < count; ++i) MoveNode(+1);
+                    if (state_->mode == Mode::TREE && !IsProtected(selected_))
+                        for (int i = 0; i < count; ++i) MoveNode(+1);
                     RefreshActiveNode();
                 };
                 state_->operations["move_parent_up"] = [this](const std::string&, int count)
                 {
-                    if (state_->mode == Mode::TREE) for (int i = 0; i < count; ++i) MoveParent(-1);
+                    if (state_->mode == Mode::TREE && !IsProtected(selected_))
+                        for (int i = 0; i < count; ++i) MoveParent(-1);
                     RefreshActiveNode();
                 };
                 state_->operations["move_parent_down"] = [this](const std::string&, int count)
                 {
-                    if (state_->mode == Mode::TREE) for (int i = 0; i < count; ++i) MoveParent(+1);
+                    if (state_->mode == Mode::TREE && !IsProtected(selected_))
+                        for (int i = 0; i < count; ++i) MoveParent(+1);
                     RefreshActiveNode();
                 };
                 // Mode switches (i/I/:/Esc) and '/' search navigation (n/N).
 
                 state_->operations["enter_normal"] = [this](const std::string&, int)
                 {
-                    if (selected_ == nullptr)
+                    if (selected_ == nullptr || IsProtected(selected_))
                     {
                         return;
                     }
@@ -186,7 +199,7 @@ namespace terminadventure::treeview
                 };
                 state_->operations["enter_insert"] = [this](const std::string&, int)
                 {
-                    if (selected_ == nullptr)
+                    if (selected_ == nullptr || IsProtected(selected_))
                     {
                         return;
                     }
@@ -200,7 +213,7 @@ namespace terminadventure::treeview
                 };
                 state_->operations["enter_visual"] = [this](const std::string&, int)
                 {
-                    if (selected_ == nullptr)
+                    if (selected_ == nullptr || IsProtected(selected_))
                     {
                         return;
                     }
@@ -208,7 +221,7 @@ namespace terminadventure::treeview
                 };
                 state_->operations["enter_visual_line"] = [this](const std::string&, int)
                 {
-                    if (selected_ == nullptr)
+                    if (selected_ == nullptr || IsProtected(selected_))
                     {
                         return;
                     }
@@ -216,7 +229,7 @@ namespace terminadventure::treeview
                 };
                 state_->operations["enter_visual_block"] = [this](const std::string&, int)
                 {
-                    if (selected_ == nullptr)
+                    if (selected_ == nullptr || IsProtected(selected_))
                     {
                         return;
                     }
@@ -460,6 +473,7 @@ namespace terminadventure::treeview
             void DeleteNode();
             void MoveNode(int dir);
             void MoveParent(int dir);
+            bool IsProtected(const TreeNode* node) const;
             void SearchJump(int dir);
             void RefreshActiveNode();
             void SaveTo(const std::string& path);
@@ -774,6 +788,16 @@ namespace terminadventure::treeview
             target->children.insert(target->children.begin(), std::move(moved));
             selected_ = &target->children.front();
         }
+    }
+
+    // A node the user must not modify through the tree/editor: anything that is
+    // not a plain EDITOR node (it renders through a dedicated UI), and the
+    // DM Tools root regardless of type.
+    bool TreeView::IsProtected(const TreeNode* node) const
+    {
+        if (node == nullptr) return false;
+        if (node->type != NodeType::EDITOR) return true;
+        return node->name == "DM Tools";
     }
 
     // Sync state_->active_node with the selection, reset the undo history when
