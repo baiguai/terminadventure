@@ -8,6 +8,8 @@ SOURCES=(
     "src/main.cpp"
     "src/editor/editor.cpp"
     "src/treeview/treeview.cpp"
+    "src/diceroller/diceroller.cpp"
+    "src/rightpane/rightpane.cpp"
     "src/keyboard/keymap.cpp"
     "src/op/op.cpp"
     "src/config/config.cpp"

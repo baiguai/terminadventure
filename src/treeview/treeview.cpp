@@ -199,7 +199,11 @@ namespace terminadventure::treeview
                 };
                 state_->operations["enter_insert"] = [this](const std::string&, int)
                 {
-                    if (selected_ == nullptr || IsProtected(selected_))
+                    // ROLLER nodes show the dedicated dice-roller UI, which
+                    // reuses INSERT mode for its input field.
+                    const bool can_insert = selected_ != nullptr
+                        && (!IsProtected(selected_) || selected_->type == NodeType::ROLLER);
+                    if (!can_insert)
                     {
                         return;
                     }
@@ -822,6 +826,14 @@ namespace terminadventure::treeview
         {
             terminadventure::history::Record(*state_, selected_->id);
         }
+        // A ROLLER node renders through the dedicated dice-roller UI and
+        // reuses INSERT mode: focus the right pane so typing rolls works.
+        if (selected_ != nullptr && state_->mode == Mode::TREE
+            && selected_->type == NodeType::ROLLER)
+        {
+            state_->mode = Mode::INSERT;
+            if (state_->focus_editor) state_->focus_editor();
+        }
     }
 
     // ============ Document persistence ============
@@ -832,8 +844,8 @@ namespace terminadventure::treeview
     {
         std::string json = terminadventure::io::Serialize(roots_, state_->treeview_width,
                                                       state_->bookmarks,
-                                                      state_->history);
-        if (!terminadventure::io::WriteFile(path, json))
+                                                      state_->history, state_->presets);
+        if (!terminadventure::io::SaveDocumentFile(path, json))
         {
             state_->status = "Error: could not write " + path;
             return;
@@ -850,17 +862,25 @@ namespace terminadventure::treeview
     void TreeView::LoadFrom(const std::string& path)
     {
         std::string content;
-        if (!terminadventure::io::ReadFile(path, content))
+        const terminadventure::io::LoadStatus status =
+            terminadventure::io::LoadDocumentFile(path, content);
+        if (status == terminadventure::io::LoadStatus::NotFound)
         {
             state_->status = "Error: could not open " + path;
+            return;
+        }
+        if (status == terminadventure::io::LoadStatus::NotTerminadventure)
+        {
+            state_->status = "Not a Terminadventure file: " + path;
             return;
         }
         std::vector<TreeNode> loaded;
         int loaded_width = state_->treeview_width;
         std::vector<terminadventure::bookmark::Bookmark> loaded_marks;
         std::vector<std::string> loaded_history;
+        std::vector<std::string> loaded_presets;
         if (!terminadventure::io::Deserialize(content, loaded, &loaded_width, &loaded_marks,
-                                          &loaded_history))
+                                          &loaded_history, &loaded_presets))
         {
             state_->status = "Error: could not parse " + path;
             return;
@@ -868,6 +888,7 @@ namespace terminadventure::treeview
         state_->treeview_width = loaded_width;
         state_->bookmarks = std::move(loaded_marks);
         state_->history = std::move(loaded_history);
+        state_->presets = std::move(loaded_presets);
         EnsureIds(loaded);
         roots_ = std::move(loaded);
         current_file_ = path;
@@ -1030,8 +1051,8 @@ namespace terminadventure::treeview
         std::vector<TreeNode> branch;
         branch.push_back(*selected_);
         const std::string json = terminadventure::io::Serialize(branch, state_->treeview_width,
-                                                            {}, {});
-        if (!terminadventure::io::WriteFile(path, json))
+                                                             {}, {}, {});
+        if (!terminadventure::io::SaveDocumentFile(path, json))
         {
             state_->status = "Error: could not export " + path;
             return;
@@ -1150,7 +1171,7 @@ namespace terminadventure::treeview
     {
         std::string json = terminadventure::io::Serialize(roots_, state_->treeview_width,
                                                       state_->bookmarks,
-                                                      state_->history);
+                                                      state_->history, state_->presets);
         auto& stack = state_->undo_stack;
         if (!stack.empty() && stack.back().json == json) return;
         UndoState st;
@@ -1175,7 +1196,7 @@ namespace terminadventure::treeview
 
         UndoState current;
         current.json = terminadventure::io::Serialize(roots_, state_->treeview_width,
-                                                  state_->bookmarks, state_->history);
+                                                  state_->bookmarks, state_->history, state_->presets);
         current.preview = selected_ ? terminadventure::undo::FirstTextLine(*selected_) : "";
         state_->redo_stack.push_back(std::move(current));
         for (std::size_t i = stack.size(); i-- > stack_index + 1;)
@@ -1197,7 +1218,8 @@ namespace terminadventure::treeview
         int width = state_->treeview_width;
         std::vector<bookmark::Bookmark> marks;
         std::vector<std::string> hist;
-        if (!terminadventure::io::Deserialize(target.json, loaded, &width, &marks, &hist))
+        std::vector<std::string> pres;
+        if (!terminadventure::io::Deserialize(target.json, loaded, &width, &marks, &hist, &pres))
         {
             state_->status = "Undo failed: stored state unreadable";
             return;
@@ -1206,6 +1228,7 @@ namespace terminadventure::treeview
         state_->treeview_width = width;
         state_->bookmarks = std::move(marks);
         state_->history = std::move(hist);
+        state_->presets = std::move(pres);
         state_->changed = true;
         selected_ = nullptr;
         if (!selected_id.empty())

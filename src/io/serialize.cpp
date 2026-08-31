@@ -69,7 +69,8 @@ namespace terminadventure::io
 
                 bool Deserialize(std::vector<TreeNode>& roots, int* tree_width,
                                  std::vector<bookmark::Bookmark>* bookmarks,
-                                 std::vector<std::string>* history)
+                                 std::vector<std::string>* history,
+                                 std::vector<std::string>* presets)
                 {
                     SkipWs();
                     if (!Consume('{')) return false;
@@ -83,6 +84,8 @@ namespace terminadventure::io
                     bool have_marks = false;
                     std::vector<std::string> hist;
                     bool have_history = false;
+                    std::vector<std::string> pres;
+                    bool have_presets = false;
                     int version = -1;
 
                     if (!Consume('}'))
@@ -120,6 +123,11 @@ namespace terminadventure::io
                                 if (!ParseHistory(hist)) return false;
                                 have_history = true;
                             }
+                            else if (key == "presets")
+                            {
+                                if (!ParseHistory(pres)) return false;
+                                have_presets = true;
+                            }
                             else
                             {
                                 if (!SkipValue()) return false;
@@ -141,6 +149,7 @@ namespace terminadventure::io
                     if (have_width && tree_width) *tree_width = width;
                     if (have_marks && bookmarks) *bookmarks = std::move(marks);
                     if (have_history && history) *history = std::move(hist);
+                    if (have_presets && presets) *presets = std::move(pres);
                     return true;
                 }
 
@@ -403,7 +412,8 @@ namespace terminadventure::io
 
     std::string Serialize(const std::vector<TreeNode>& roots, int tree_width,
                           const std::vector<bookmark::Bookmark>& bookmarks,
-                          const std::vector<std::string>& history)
+                          const std::vector<std::string>& history,
+                          const std::vector<std::string>& presets)
     {
         std::string out = "{\n  \"version\": 1,\n  \"tree_width\": " +
                           std::to_string(tree_width) + ",\n  \"bookmarks\": [\n";
@@ -424,6 +434,12 @@ namespace terminadventure::io
             out += "    " + Escape(history[i]);
             out += (i + 1 < history.size()) ? ",\n" : "\n";
         }
+        out += "  ],\n  \"presets\": [\n";
+        for (std::size_t i = 0; i < presets.size(); ++i)
+        {
+            out += "    " + Escape(presets[i]);
+            out += (i + 1 < presets.size()) ? ",\n" : "\n";
+        }
         out += "  ],\n  \"roots\": [\n";
         for (std::size_t i = 0; i < roots.size(); ++i)
         {
@@ -436,10 +452,10 @@ namespace terminadventure::io
 
     bool Deserialize(const std::string& json, std::vector<TreeNode>& roots,
                      int* tree_width, std::vector<bookmark::Bookmark>* bookmarks,
-                     std::vector<std::string>* history)
+                     std::vector<std::string>* history, std::vector<std::string>* presets)
     {
         Parser parser(json);
-        return parser.Deserialize(roots, tree_width, bookmarks, history);
+        return parser.Deserialize(roots, tree_width, bookmarks, history, presets);
     }
 
     bool WriteFile(const std::string& path, const std::string& content)
@@ -459,5 +475,25 @@ namespace terminadventure::io
         if (in.bad()) return false;
         content = ss.str();
         return true;
+    }
+
+    bool SaveDocumentFile(const std::string& path, const std::string& json)
+    {
+        return WriteFile(path, std::string(kDocumentMagic) + json);
+    }
+
+    LoadStatus LoadDocumentFile(const std::string& path, std::string& json)
+    {
+        std::string content;
+        if (!ReadFile(path, content))
+        {
+            return LoadStatus::NotFound;
+        }
+        if (content.rfind(kDocumentMagic, 0) != 0)
+        {
+            return LoadStatus::NotTerminadventure;
+        }
+        json = content.substr(std::char_traits<char>::length(kDocumentMagic));
+        return LoadStatus::Ok;
     }
 }

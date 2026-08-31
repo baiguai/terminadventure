@@ -48,6 +48,10 @@ struct EditorState {
     std::vector<std::string> recent_files;
     static constexpr std::size_t kRecentMax = 20;
 
+    // Saved dice-roller presets, kept as raw roll strings (e.g. "2d6+2").
+    // Persisted with the document so they travel with the open file.
+    std::vector<std::string> presets;
+
     // Document undo history. A snapshot is pushed before every content
     // mutation (tree edits and text edits); `undo_stack` is newest last,
     // `redo_stack` newest first. `snapshot_undo`/`apply_undo`/`clear_undo`

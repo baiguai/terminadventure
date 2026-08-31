@@ -27,7 +27,7 @@ using namespace ftxui;
 int main(int, char** argv) {
     auto state = std::make_shared<EditorState>();
 
-    auto editor_comp = terminadventure::editor::MakeEditor(state);
+    auto editor_comp = terminadventure::rightpane::MakeRightPane(state);
     auto treeview_comp = terminadventure::treeview::MakeTreeView(state);
 
     state->focus_editor = [editor_comp] { editor_comp->TakeFocus(); };

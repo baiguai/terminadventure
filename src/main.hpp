@@ -6,4 +6,5 @@
 #include "editor/editor_state.hpp"
 
 #include "editor/editor.hpp"
+#include "rightpane/rightpane.hpp"
 #include "treeview/treeview.hpp"
