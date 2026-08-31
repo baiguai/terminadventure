@@ -952,10 +952,6 @@ namespace terminadventure::treeview
     {
         std::vector<TreeNode> folders;
         folders.reserve(4);
-        TreeNode game;
-        game.id = terminadventure::bookmark::NewId();
-        game.name = "Current Game";
-        game.type = NodeType::GAME;
         TreeNode roller;
         roller.id = terminadventure::bookmark::NewId();
         roller.name = "Dice Roller";
@@ -968,7 +964,6 @@ namespace terminadventure::treeview
         enemies.id = terminadventure::bookmark::NewId();
         enemies.name = "Enemies";
         enemies.type = NodeType::ENEMIES;
-        folders.push_back(std::move(game));
         folders.push_back(std::move(roller));
         folders.push_back(std::move(players));
         folders.push_back(std::move(enemies));

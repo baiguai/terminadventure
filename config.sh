@@ -6,6 +6,7 @@ APP_NAME="terminadventure"
 
 SOURCES=(
     "src/main.cpp"
+    "src/calc/calc.cpp"
     "src/editor/editor.cpp"
     "src/treeview/treeview.cpp"
     "src/diceroller/diceroller.cpp"

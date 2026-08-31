@@ -10,7 +10,6 @@ namespace terminadventure::treeview
     enum class NodeType
     {
         EDITOR,
-        GAME,
         ROLLER,
         PLAYERS,
         ENEMIES,
@@ -21,7 +20,6 @@ namespace terminadventure::treeview
         switch (t)
         {
             case NodeType::EDITOR:   return "EDITOR";
-            case NodeType::GAME:     return "GAME";
             case NodeType::ROLLER:   return "ROLLER";
             case NodeType::PLAYERS:  return "PLAYERS";
             case NodeType::ENEMIES:  return "ENEMIES";
@@ -32,7 +30,6 @@ namespace terminadventure::treeview
     inline NodeType NodeTypeFromString(const std::string& s)
     {
         if (s == "EDITOR")   return NodeType::EDITOR;
-        if (s == "GAME")     return NodeType::GAME;
         if (s == "ROLLER")   return NodeType::ROLLER;
         if (s == "PLAYERS")  return NodeType::PLAYERS;
         if (s == "ENEMIES")  return NodeType::ENEMIES;

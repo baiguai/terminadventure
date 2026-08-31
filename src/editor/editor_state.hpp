@@ -27,6 +27,10 @@ struct EditorState {
     Mode mode = Mode::TREE;
     std::string command_buffer;
     int command_cursor = 0;
+    // When a command (e.g. :calc) leaves its result in the command field, it
+    // sets this so the command handler keeps the line open instead of closing
+    // it after executing the command.
+    bool keep_command_open = false;
     int* active_child = nullptr;
     Mode mode_before_command = Mode::TREE;
     bool changed = false;

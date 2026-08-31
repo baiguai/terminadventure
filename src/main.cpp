@@ -110,6 +110,22 @@ int main(int, char** argv) {
     bool show_undo = false;
     state->operations["undo"] = [&show_undo](const std::string&, int) { show_undo = true; };
 
+    state->operations["calc"] = [state](const std::string& args, int)
+    {
+        std::string result;
+        if (!terminadventure::calc::Evaluate(args, result))
+        {
+            state->status = "Calc error: " + args;
+            return;
+        }
+        // Show the result in the command field and keep the line open so the
+        // field (now holding the answer) stays visible to the user.
+        state->command_buffer = ":" + result;
+        state->command_cursor = static_cast<int>(state->command_buffer.size());
+        state->keep_command_open = true;
+    };
+    state->commands["calc"] = "calc";
+
     bool show_file_browser = false;
     state->show_file_browser = &show_file_browser;
 
@@ -192,6 +208,13 @@ int main(int, char** argv) {
                     terminadventure::op::ExecuteSearch(state, buffer);
                 else
                     terminadventure::op::ExecuteCommand(state, buffer);
+            }
+            // A command (e.g. :calc) may leave its result in the field and ask
+            // to keep the command line open; otherwise close it as usual.
+            if (state->keep_command_open)
+            {
+                state->keep_command_open = false;
+                return true;
             }
             state->command_buffer.clear();
             state->command_cursor = 0;

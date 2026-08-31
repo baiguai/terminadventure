@@ -15,6 +15,7 @@ FetchContent_MakeAvailable(ftxui)
 # Create executable
 add_executable(terminadventure
     src/main.cpp
+    src/calc/calc.cpp
     src/editor/editor.cpp
     src/treeview/treeview.cpp
     src/diceroller/diceroller.cpp
