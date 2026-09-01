@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 project(terminadventure VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Create executable
+add_executable(terminadventure
+    src/main.cpp
+)
 
 include(FetchContent)
 FetchContent_Declare(ftxui
@@ -12,33 +17,20 @@ FetchContent_Declare(ftxui
 )
 FetchContent_MakeAvailable(ftxui)
 
-# Create executable
-add_executable(terminadventure
-    src/main.cpp
-    src/calc/calc.cpp
-    src/editor/editor.cpp
-    src/treeview/treeview.cpp
-    src/diceroller/diceroller.cpp
-    src/rightpane/rightpane.cpp
-    src/keyboard/keymap.cpp
-    src/op/op.cpp
-    src/config/config.cpp
-    src/io/serialize.cpp
-    src/html/convert.cpp
-    src/help/help.cpp
-    src/search/search.cpp
-    src/visual_block/visual_block.cpp
-    src/bookmark/bookmark.cpp
-    src/bookmarks/bookmarks.cpp
-    src/links/links.cpp
-    src/links/brokelinks.cpp
-    src/history/history.cpp
-    src/browser/browser.cpp
-    src/recent/recent.cpp
-    src/undo/undo.cpp
-)
-
-# FTXUI is terminal-only, no extra platform libs needed
+# Platform-specific libraries
+if(UNIX AND NOT APPLE)
+    # Linux/X11
+    find_package(X11 REQUIRED)
+    target_link_libraries(terminadventure PRIVATE X11::X11 X11::Xfixes)
+elseif(APPLE)
+    # macOS
+    find_library(COCOA Cocoa)
+    find_library(COREFOUNDATION CoreFoundation)
+    target_link_libraries(terminadventure PRIVATE ${COCOA} ${COREFOUNDATION})
+elseif(WIN32)
+    # Windows
+    target_link_libraries(terminadventure PRIVATE user32 kernel32 gdi32)
+endif()
 
 # Compiler-specific options
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
