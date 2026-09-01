@@ -19,7 +19,6 @@ def enter_players(s):
 
 
 def new_character(s, name):
-    s.send(b'\t'); s.send(b'1')          # action zone -> New
     s.send(b'\x1bB')                     # ArrowDown -> focus Name field
     s.send(name.encode())                # type the name
 
@@ -35,6 +34,7 @@ try:
     s.require('[New]', 'Players pane should show the action bar')
     s.require('Saved Characters', 'Players pane should show the saved list')
     s.require('(none)', 'list should start empty')
+    s.require('Generate traits', 'the new-player form should show by default')
 
     new_character(s, NAME)
     save_character(s)
@@ -109,7 +109,6 @@ ENTER = b'\r'
 s = harness.launch(workdir=DROP_DIR)
 try:
     enter_players(s)
-    s.send(b'\t'); s.send(b'1')          # New
     s.send(ARROW_DOWN); s.send(ARROW_DOWN)  # focus the Race dropdown
     s.send(ENTER)                        # open it
     s.require('Enter: select', 'Enter should open the dropdown window')
@@ -129,7 +128,6 @@ os.makedirs(GEN_DIR)
 s = harness.launch(workdir=GEN_DIR)
 try:
     enter_players(s)
-    s.send(b'\t'); s.send(b'1')          # New (keeps chosen Race/Class/Level)
     # scroll down the identity fields to the Generate traits button
     for _ in range(10):
         s.send(ARROW_DOWN)

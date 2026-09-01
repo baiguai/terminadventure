@@ -133,6 +133,8 @@ namespace terminadventure::players
             explicit PlayersPane(std::shared_ptr<EditorState> state)
                 : state_(std::move(state))
             {
+                // Default to a fresh new-player form when the pane is opened.
+                StartNew();
             }
 
             bool Focusable() const override { return true; }
@@ -978,7 +980,7 @@ namespace terminadventure::players
                     case Kind::Number:
                     {
                         std::string val = w.number ? std::to_string(*w.number) : "0";
-                        std::string line = "  " + PadTo(w.label, 12) + ": " + val;
+                        std::string line = "  " + PadTo(w.label, 8) + ": " + val;
                         if (w.suffix) line += "  " + w.suffix();
                         if (focused && typing_.has_value()) line += "_";
                         Element e = text(line);
