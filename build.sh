@@ -64,33 +64,15 @@ make
 # Check if build was successful
 if [ -f "bin/$APP_NAME" ]; then
 
-    # Copy the config file alongside the app (the app looks for it next to the executable)
-    if [ -f "../config/commands.conf" ]; then
-        cp "../config/commands.conf" "bin/"
-        echo "Config copied to: $(pwd)/bin/commands.conf"
-    else
-        echo "Warning: config/commands.conf not found - config not copied"
-    fi
-    if [ -f "../config/terminadventure.html" ]; then
-        cp "../config/terminadventure.html" "bin/"
-        echo "Template .html copied to: $(pwd)/bin/terminadventure.html"
-    else
-        echo "Warning: config/terminadventure.html not found - template not copied"
-    fi
-    if [ -f "../config/init.conf" ]; then
-        cp "../config/init.conf" "bin/"
-        echo "Init config copied to: $(pwd)/bin/init.conf"
-    else
-        echo "Warning: config/init.conf not found - init config not copied"
-    fi
-    if [ -d "../build-windows/bin" ]; then
-        cp "../config/commands.conf" "../build-windows/bin/" 2>/dev/null || \
-            echo "Warning: could not copy config to build-windows/bin/"
-        cp "../config/terminadventure.html" "../build-windows/bin/" 2>/dev/null || \
-            echo "Warning: could not copy template to build-windows/bin/"
-        cp "../config/init.conf" "../build-windows/bin/" 2>/dev/null || \
-            echo "Warning: could not copy init config to build-windows/bin/"
-    fi
+
+
+
+    # Add any custom cp's or other actions here
+    # mkdir -p "./bin/data/themes"
+    # cp -r ../themes/* "./bin/data/themes/" 2>/dev/null || true
+
+
+
 
     echo "-- Build successful --"
     echo "Executable: $(pwd)/bin/$APP_NAME"
