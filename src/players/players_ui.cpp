@@ -472,6 +472,7 @@ namespace terminadventure::players
                 ApplyRace(*p, true);
                 RollAbilities();
                 ApplyClassSaves();
+                ApplyClassSkills(*p);
                 RefreshEquipment();
                 RefreshFeatures();
                 status_ = "Generated " + p->name;
@@ -507,6 +508,7 @@ namespace terminadventure::players
                 ApplyClass(*p);
                 RecomputeDerived(*p);
                 ApplyClassSaves();
+                ApplyClassSkills(*p);
                 RefreshEquipment();
                 RefreshFeatures();
                 status_ = "Rolled from Identity";
@@ -733,6 +735,33 @@ namespace terminadventure::players
                 if (it != state_->dnd->classes.end()) p->proficient_saves = it->second.saves;
             }
 
+            // How many skill proficiencies each class grants (standard 5E).
+            int ClassSkillCount(const std::string& cls)
+            {
+                if (cls == "Bard" || cls == "Ranger") return 3;
+                if (cls == "Rogue") return 4;
+                return 2;
+            }
+
+            // Fill the player's skill proficiencies by picking the class's
+            // required number of distinct skills from its skill list.
+            void ApplyClassSkills(Player& p)
+            {
+                if (!state_->dnd) return;
+                auto it = state_->dnd->classes.find(p.char_class);
+                p.proficient_skills.clear();
+                if (it == state_->dnd->classes.end()) return;
+                std::vector<std::string> pool = it->second.class_skills;
+                const int n = std::min(ClassSkillCount(p.char_class),
+                                       static_cast<int>(pool.size()));
+                for (int i = 0; i < n; ++i)
+                {
+                    const int idx = Random::get(0, static_cast<int>(pool.size()) - 1);
+                    p.proficient_skills.push_back(pool[static_cast<size_t>(idx)]);
+                    pool.erase(pool.begin() + idx);
+                }
+            }
+
             void RollAbilities()
             {
                 Player* p = EditingOrNull();
@@ -846,7 +875,7 @@ namespace terminadventure::players
 
                 Widget cls; cls.kind = Kind::Dropdown; cls.label = "Class"; cls.text = &p.char_class;
                 cls.options = ClassOptions();
-                cls.on_change = [this]{ if (auto p = EditingOrNull()) ApplyClass(*p); };
+                cls.on_change = [this]{ if (auto p = EditingOrNull()) { ApplyClass(*p); ApplyClassSkills(*p); } };
                 widgets_.push_back(cls);
 
                 Widget bkg; bkg.kind = Kind::Dropdown; bkg.label = "Background"; bkg.text = &p.background;
