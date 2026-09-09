@@ -11,7 +11,7 @@ int main()
         text("Hello Dave.") | bold | center,
         separator(),
         hbox({
-            text("Left Panel") | border,
+            text("Left Panel") | border | size(WIDTH, EQUAL, 60),
             vbox({
                 text("Main Content Area") | flex,
                 separator(),
@@ -20,8 +20,20 @@ int main()
         }) | flex,
     });
 
-    auto component = Renderer([document] { return document; });
-    auto screen = ScreenInteractive::TerminalOutput();
+    auto screen = ScreenInteractive::Fullscreen();
+
+    auto component = CatchEvent(
+        Renderer([document] { return document; }),
+        [&](Event event)
+        {
+            if (event == Event::Special(std::string(1, 'q' - 96)))  // Ctrl+q
+            {
+                screen.Exit();
+                return true;
+            }
+            return false;
+        });
+
     screen.Loop(component);
 
     return 0;
