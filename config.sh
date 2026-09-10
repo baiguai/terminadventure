@@ -6,6 +6,8 @@ APP_NAME="terminadventure"
 
 SOURCES=(
     "src/main.cpp"
+    "src/menu/menu.cpp"
+    "src/command/command.cpp"
 )
 
 LIBS=(
@@ -16,4 +18,6 @@ LIBS=(
 
 HEADERS=(
     "src/main.hpp"
+    "src/menu/menu.hpp"
+    "src/command/command.hpp"
 )

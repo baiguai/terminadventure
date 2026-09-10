@@ -1,0 +1,2 @@
+namespace terminadventure::menu
+{}
