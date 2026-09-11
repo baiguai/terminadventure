@@ -17,7 +17,7 @@ int main()
 
     // Command Input
     InputOption opt;
-    opt.placeholder = ":";
+    opt.placeholder = "command";
     opt.multiline = false;
     opt.transform = [](InputState state)
     {
@@ -39,10 +39,9 @@ int main()
 
 
     // Build the layout
-    auto layout = Renderer(cmd_input, [&]
-    {
-        auto input_el = cmd_input->Render();
+    auto component = Container::Vertical({cmd_input});
 
+    auto layout = Renderer(component, [&] {
         return vbox({
             text("Hello Dave.") | bold | center,
             separator(),
@@ -51,16 +50,13 @@ int main()
                 vbox({
                     text("Main Content Area") | flex,
                     separator(),
-                    input_el | size(HEIGHT, EQUAL, 1),
+                    cmd_input->Render() | size(HEIGHT, EQUAL, 1),
                 }) | flex,
             }) | flex,
         });
     });
 
-
-    // Key Handling
-    auto component = CatchEvent(layout, [&](Event event)
-    {
+    auto root = CatchEvent(layout, [&](Event event) {
         if (event == Event::Special(std::string(1, 'q' - 96)))  // Ctrl+q
         {
             screen.Exit();
@@ -68,8 +64,7 @@ int main()
         }
         return false;
     });
-
-    screen.Loop(component);
+    screen.Loop(root);
 
     return 0;
 }
