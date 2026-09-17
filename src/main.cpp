@@ -11,46 +11,31 @@ int main()
 
     // Data
     std::string command_line;
+    int selected_menu = 0;
 
     // Screen
     auto screen = ScreenInteractive::Fullscreen();
 
-    // Command Input
-    InputOption opt;
-    opt.placeholder = "command";
-    opt.multiline = false;
-    opt.transform = [](InputState state)
-    {
-        state.element |= bgcolor(Color::Black) | color(Color::White);
-        return state.element;
-    };
-    opt.on_enter = [&]
-    {
-        std::cout << "cmd: " << command_line << "\n";
-        if (command_line == "exit")
-        {
-            screen.Exit();
-            return;
-        }
-        terminadventure::command::process(command_line);
-        command_line.clear();
-    };
-    auto cmd_input = Input(&command_line, opt);
+    // Left Panel
+    auto left_menu = terminadventure::menu::createLeftMenu(selected_menu);
+
+    // Create the command element
+    auto cmd_input = terminadventure::command::createCommandInput(command_line, screen);
 
 
     // Build the layout
-    auto component = Container::Vertical({cmd_input});
+    auto component = Container::Vertical({left_menu, cmd_input});
 
     auto layout = Renderer(component, [&] {
         return vbox({
             text("Hello Dave.") | bold | center,
             separator(),
             hbox({
-                text("Left Panel") | border | size(WIDTH, EQUAL, 60),
+                left_menu->Render() | border | size(WIDTH, EQUAL, 60),
                 vbox({
-                    text("Main Content Area") | flex,
-                    separator(),
                     cmd_input->Render() | size(HEIGHT, EQUAL, 1),
+                    separator(),
+                    text("Main Content Area") | flex,
                 }) | flex,
             }) | flex,
         });
