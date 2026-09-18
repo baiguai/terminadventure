@@ -8,6 +8,7 @@ SOURCES=(
     "src/main.cpp"
     "src/menu/menu.cpp"
     "src/command/command.cpp"
+    "src/screen/screen.cpp"
 )
 
 LIBS=(
@@ -20,4 +21,5 @@ HEADERS=(
     "src/main.hpp"
     "src/menu/menu.hpp"
     "src/command/command.hpp"
+    "src/screen/screen.hpp"
 )

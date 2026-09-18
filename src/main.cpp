@@ -1,7 +1,9 @@
 #include <iostream>
+#include <vector>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
+#include "./screen/screen.hpp"
 #include "./menu/menu.hpp"
 #include "./command/command.hpp"
 
@@ -22,6 +24,9 @@ int main()
     // Create the command element
     auto cmd_input = terminadventure::command::createCommandInput(command_line, screen);
 
+    std::vector<Component> focusables = { left_menu, cmd_input };
+    int focus_index = 0;
+
 
     // Build the layout
     auto component = Container::Vertical({left_menu, cmd_input});
@@ -35,13 +40,27 @@ int main()
                 vbox({
                     cmd_input->Render() | size(HEIGHT, EQUAL, 1),
                     separator(),
-                    text("Main Content Area") | flex,
+                    terminadventure::screen::render(static_cast<terminadventure::screen::Type>(selected_menu)) | flex,
                 }) | flex,
             }) | flex,
         });
     });
 
     auto root = CatchEvent(layout, [&](Event event) {
+        if (event == Event::Tab)
+        {
+            focus_index = (focus_index + 1) % static_cast<int>(focusables.size());
+            focusables[focus_index]->TakeFocus();
+            return true;
+        }
+        if (event == Event::TabReverse)
+        {
+            focus_index = (focus_index -1 + static_cast<int>(focusables.size())) % static_cast<int>(focusables.size());
+            focusables[focus_index]->TakeFocus();
+            return true;
+        }
+
+
         if (event == Event::Special(std::string(1, 'q' - 96)))  // Ctrl+q
         {
             screen.Exit();
