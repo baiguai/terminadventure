@@ -9,6 +9,9 @@ SOURCES=(
     "src/menu/menu.cpp"
     "src/command/command.cpp"
     "src/screen/screen.cpp"
+    "src/screen/gm_tools/gm_tools.cpp"
+    "src/screen/roller/roller.cpp"
+    "src/screen/notes/notes.cpp"
 )
 
 LIBS=(
@@ -22,4 +25,7 @@ HEADERS=(
     "src/menu/menu.hpp"
     "src/command/command.hpp"
     "src/screen/screen.hpp"
+    "src/screen/gm_tools/gm_tools.hpp"
+    "src/screen/roller/roller.hpp"
+    "src/screen/notes/notes.hpp"
 )

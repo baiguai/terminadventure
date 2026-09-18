@@ -12,6 +12,7 @@ namespace terminadventure::menu
         {
             "GM Tools",
             "Dice Roller",
+            "Notes",
             "Stuff"
         };
 

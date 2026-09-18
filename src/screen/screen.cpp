@@ -1,4 +1,7 @@
 #include "./screen.hpp"
+#include "./gm_tools/gm_tools.hpp"
+#include "./roller/roller.hpp"
+#include "./notes/notes.hpp"
 
 namespace terminadventure::screen
 {
@@ -9,9 +12,11 @@ namespace terminadventure::screen
         switch (screen)
         {
             case Type::GmTools:
-                return text("GM Tools Content");
+                return gm_tools::render();
             case Type::Roller:
-                return text("Roller Content");
+                return roller::render();
+            case Type::Notes:
+                return notes::render();
             default:
                 return text("Main Content Area");
         }
