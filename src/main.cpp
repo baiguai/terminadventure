@@ -1,7 +1,9 @@
 #include <iostream>
+#include <vector>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
+#include "./screen/screen.hpp"
 #include "./menu/menu.hpp"
 #include "./command/command.hpp"
 
@@ -11,56 +13,54 @@ int main()
 
     // Data
     std::string command_line;
+    int selected_menu = 0;
 
     // Screen
     auto screen = ScreenInteractive::Fullscreen();
 
-    // Command Input
-    InputOption opt;
-    opt.placeholder = ":";
-    opt.multiline = false;
-    opt.transform = [](InputState state)
-    {
-        state.element |= bgcolor(Color::Black) | color(Color::White);
-        return state.element;
-    };
-    opt.on_enter = [&]
-    {
-        std::cout << "cmd: " << command_line << "\n";
-        if (command_line == "exit")
-        {
-            screen.Exit();
-            return;
-        }
-        terminadventure::command::process(command_line);
-        command_line.clear();
-    };
-    auto cmd_input = Input(&command_line, opt);
+    // Left Panel
+    auto left_menu = terminadventure::menu::createLeftMenu(selected_menu);
+
+    // Create the command element
+    auto cmd_input = terminadventure::command::createCommandInput(command_line, screen);
+
+    std::vector<Component> focusables = { left_menu, cmd_input };
+    int focus_index = 0;
 
 
     // Build the layout
-    auto layout = Renderer(cmd_input, [&]
-    {
-        auto input_el = cmd_input->Render();
+    auto component = Container::Vertical({left_menu, cmd_input});
 
+    auto layout = Renderer(component, [&] {
         return vbox({
             text("Hello Dave.") | bold | center,
             separator(),
             hbox({
-                text("Left Panel") | border | size(WIDTH, EQUAL, 60),
+                left_menu->Render() | border | size(WIDTH, EQUAL, 60),
                 vbox({
-                    text("Main Content Area") | flex,
+                    cmd_input->Render() | size(HEIGHT, EQUAL, 1),
                     separator(),
-                    input_el | size(HEIGHT, EQUAL, 1),
+                    terminadventure::screen::render(static_cast<terminadventure::screen::Type>(selected_menu)) | flex,
                 }) | flex,
             }) | flex,
         });
     });
 
+    auto root = CatchEvent(layout, [&](Event event) {
+        if (event == Event::Tab)
+        {
+            focus_index = (focus_index + 1) % static_cast<int>(focusables.size());
+            focusables[focus_index]->TakeFocus();
+            return true;
+        }
+        if (event == Event::TabReverse)
+        {
+            focus_index = (focus_index -1 + static_cast<int>(focusables.size())) % static_cast<int>(focusables.size());
+            focusables[focus_index]->TakeFocus();
+            return true;
+        }
 
-    // Key Handling
-    auto component = CatchEvent(layout, [&](Event event)
-    {
+
         if (event == Event::Special(std::string(1, 'q' - 96)))  // Ctrl+q
         {
             screen.Exit();
@@ -68,8 +68,7 @@ int main()
         }
         return false;
     });
-
-    screen.Loop(component);
+    screen.Loop(root);
 
     return 0;
 }
