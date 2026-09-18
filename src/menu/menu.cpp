@@ -11,7 +11,8 @@ namespace terminadventure::menu
         static const std::vector<std::string> entries =
         {
             "GM Tools",
-            "Dice Roller"
+            "Dice Roller",
+            "Stuff"
         };
 
         return Menu(&entries, &selected_index);

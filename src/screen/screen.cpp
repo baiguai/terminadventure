@@ -10,6 +10,8 @@ namespace terminadventure::screen
         {
             case Type::GmTools:
                 return text("GM Tools Content");
+            case Type::Roller:
+                return text("Roller Content");
             default:
                 return text("Main Content Area");
         }

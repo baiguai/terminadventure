@@ -5,7 +5,7 @@
 namespace terminadventure::screen
 {
 
-    enum class Type { GmTools };
+    enum class Type { GmTools, Roller, Stuff };
     ftxui::Element render(Type screen);
 
 }
