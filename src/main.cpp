@@ -22,7 +22,7 @@ int main()
     auto left_menu = terminadventure::menu::createLeftMenu(selected_menu);
 
     // Create the command element
-    auto cmd_input = terminadventure::command::createCommandInput(command_line, screen);
+    auto cmd_input = terminadventure::command::createCommandInput(command_line, screen, selected_menu);
 
     std::vector<Component> focusables = { left_menu, cmd_input };
     int focus_index = 0;

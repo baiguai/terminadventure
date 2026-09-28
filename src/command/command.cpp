@@ -1,9 +1,10 @@
 #include "./command.hpp"
+#include "../screen/screen.hpp"
 #include <iostream>
 
 namespace terminadventure::command
 {
-    ftxui::Element process(const std::string& input)
+    ftxui::Element process(const std::string& input, ftxui::ScreenInteractive& screen, terminadventure::screen::Type screenType)
     {
         using namespace ftxui;
 
@@ -15,7 +16,7 @@ namespace terminadventure::command
         return text(":" + input);
     }
 
-    ftxui::Component createCommandInput(std::string& command_line, ftxui::ScreenInteractive& screen)
+    ftxui::Component createCommandInput(std::string& command_line, ftxui::ScreenInteractive& screen, int& selected_screen)
     {
         using namespace ftxui;
 
@@ -42,7 +43,7 @@ namespace terminadventure::command
                 screen.Exit();
                 return;
             }
-            terminadventure::command::process(command_line);
+            terminadventure::command::process(command_line, screen, static_cast<terminadventure::screen::Type>(selected_screen));
             command_line.clear();
         };
 
